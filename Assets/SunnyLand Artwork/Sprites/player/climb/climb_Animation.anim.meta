@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f4ddc481126ef51428e1cfe972fbe745
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103349
+  packageName: Sunny Land
+  packageVersion: 1.1
+  assetPath: Assets/SunnyLand Artwork/Sprites/player/climb/climb_Animation.anim
+  uploadId: 540939

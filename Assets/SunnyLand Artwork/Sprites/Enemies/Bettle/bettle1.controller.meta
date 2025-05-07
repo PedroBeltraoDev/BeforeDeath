@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 92ac96d13992d1e45bb5519bc16468cf
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103349
+  packageName: Sunny Land
+  packageVersion: 1.1
+  assetPath: Assets/SunnyLand Artwork/Sprites/Enemies/Bettle/bettle1.controller
+  uploadId: 540939

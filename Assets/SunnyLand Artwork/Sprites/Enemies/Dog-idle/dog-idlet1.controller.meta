@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 37df7265558758d40b7233873400f564
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103349
+  packageName: Sunny Land
+  packageVersion: 1.1
+  assetPath: Assets/SunnyLand Artwork/Sprites/Enemies/Dog-idle/dog-idlet1.controller
+  uploadId: 540939

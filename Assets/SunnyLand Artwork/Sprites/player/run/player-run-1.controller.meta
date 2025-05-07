@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 02b1ea4278e1d6641a652b9a8540fbac
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103349
+  packageName: Sunny Land
+  packageVersion: 1.1
+  assetPath: Assets/SunnyLand Artwork/Sprites/player/run/player-run-1.controller
+  uploadId: 540939

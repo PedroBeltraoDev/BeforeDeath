@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 64c630e37ac9954458d4415ab548619f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103349
+  packageName: Sunny Land
+  packageVersion: 1.1
+  assetPath: Assets/SunnyLand Artwork/Sprites/player/crouch/Crouch_Animation.anim
+  uploadId: 540939

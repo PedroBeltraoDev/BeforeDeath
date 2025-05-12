@@ -14,8 +14,8 @@ TagManager:
   - 
   - 
   - Chao
-  - 
-  - 
+  - Plataforma
+  - IgnoraPlataforma
   - 
   - 
   - 
@@ -55,6 +55,9 @@ TagManager:
     locked: 0
   - name: Back5
     uniqueID: 367723515
+    locked: 0
+  - name: Plataforma
+    uniqueID: 3481583793
     locked: 0
   - name: Character
     uniqueID: 1300168649

@@ -10,7 +10,8 @@ public class Movimento : MonoBehaviour
 
     [Header("Pulo e Pulo Duplo")]
     [SerializeField] private Transform peDoPersonagem;
-    [SerializeField] private LayerMask chaoLayer;
+    [SerializeField] private LayerMask layerParaPulo;       // Chao + Plataforma
+    [SerializeField] private LayerMask layerChaoSolido;      // Só Chao
     [SerializeField] private int maximoPulos = 2;
     private int quantidadePulos;
     private bool estaNoChao;
@@ -27,46 +28,51 @@ public class Movimento : MonoBehaviour
     private int movendoHash = Animator.StringToHash("movendo");
     private int saltandoHash = Animator.StringToHash("saltando");
 
+    private int layerOriginal;
+    [SerializeField] private string layerIgnoraPlataforma = "IgnoraPlataforma";
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        layerOriginal = gameObject.layer;
     }
 
     void Update()
     {
-        estaNoChao = Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, chaoLayer);
+        // Verifica se está em qualquer superfície que permite pular (chão ou plataforma)
+        estaNoChao = Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerParaPulo);
 
-        // Reseta pulos ao tocar o chão
-        if (estaNoChao)
+        if (estaNoChao && rb.linearVelocity.y <= 0.1f)
         {
             quantidadePulos = maximoPulos;
         }
 
         horizontalInput = Input.GetAxis("Horizontal");
 
-        // Pulo e pulo duplo
         if (Input.GetKeyDown(KeyCode.Space) && quantidadePulos > 0)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0); // Cancela impulso vertical anterior
-            rb.AddForce(Vector2.up * 600);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 12f);
             quantidadePulos--;
         }
 
-        // Dash
         if (Input.GetKeyDown(KeyCode.LeftShift) && podeDarDash)
         {
             StartCoroutine(FazerDash());
         }
 
-        // Animações
+        // Cair das plataformas somente se estiver sobre uma plataforma (não chão)
+        if (Input.GetKeyDown(KeyCode.S) && Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerChaoSolido) == false)
+        {
+            StartCoroutine(CairDaPlataforma());
+        }
+
         animator.SetBool(movendoHash, horizontalInput != 0);
         animator.SetBool(saltandoHash, !estaNoChao);
 
-        // Virar sprite
-        if (horizontalInput > 0) spriteRenderer.flipX = false;
-        else if (horizontalInput < 0) spriteRenderer.flipX = true;
+        if (horizontalInput < 0) spriteRenderer.flipX = true;
+        else if (horizontalInput > 0) spriteRenderer.flipX = false;
     }
 
     private void FixedUpdate()
@@ -82,13 +88,20 @@ public class Movimento : MonoBehaviour
         podeDarDash = false;
         estaDandoDash = true;
 
-        float direcao = spriteRenderer.flipX ? -1f : 1f;
-        rb.linearVelocity = new Vector2(direcao * velocidadeDash, rb.linearVelocity.y); // Mantém a força do pulo
+        float direcao = horizontalInput != 0 ? Mathf.Sign(horizontalInput) : (spriteRenderer.flipX ? -1f : 1f);
+        rb.linearVelocity = new Vector2(direcao * velocidadeDash, rb.linearVelocity.y);
 
         yield return new WaitForSeconds(duracaoDash);
         estaDandoDash = false;
 
         yield return new WaitForSeconds(tempoRecargaDash);
         podeDarDash = true;
+    }
+
+    private System.Collections.IEnumerator CairDaPlataforma()
+    {
+        gameObject.layer = LayerMask.NameToLayer(layerIgnoraPlataforma);
+        yield return new WaitForSeconds(0.3f);
+        gameObject.layer = layerOriginal;
     }
 }

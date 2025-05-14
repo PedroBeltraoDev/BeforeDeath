@@ -23,25 +23,19 @@ public class Movimento : MonoBehaviour
     private bool podeDarDash = true;
     private bool estaDandoDash = false;
 
-    private Animator animator;
     private SpriteRenderer spriteRenderer;
-    private int movendoHash = Animator.StringToHash("movendo");
-    private int saltandoHash = Animator.StringToHash("saltando");
-
     private int layerOriginal;
     [SerializeField] private string layerIgnoraPlataforma = "IgnoraPlataforma";
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         layerOriginal = gameObject.layer;
     }
 
     void Update()
     {
-        // Verifica se está em qualquer superfície que permite pular (chão ou plataforma)
         estaNoChao = Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerParaPulo);
 
         if (estaNoChao && rb.linearVelocity.y <= 0.1f)
@@ -62,17 +56,13 @@ public class Movimento : MonoBehaviour
             StartCoroutine(FazerDash());
         }
 
-        // Cair das plataformas somente se estiver sobre uma plataforma (não chão)
-        if (Input.GetKeyDown(KeyCode.S) && Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerChaoSolido) == false)
+        if (Input.GetKeyDown(KeyCode.S) && !Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerChaoSolido))
         {
             StartCoroutine(CairDaPlataforma());
         }
 
-        animator.SetBool(movendoHash, horizontalInput != 0);
-        animator.SetBool(saltandoHash, !estaNoChao);
-
-        if (horizontalInput < 0) spriteRenderer.flipX = true;
-        else if (horizontalInput > 0) spriteRenderer.flipX = false;
+        if (horizontalInput > 0) spriteRenderer.flipX = true;
+        else if (horizontalInput < 0) spriteRenderer.flipX = false;
     }
 
     private void FixedUpdate()

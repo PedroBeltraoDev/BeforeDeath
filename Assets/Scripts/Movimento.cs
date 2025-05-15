@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Movimento : MonoBehaviour
 {
+    [SerializeField] private Animator anim;
+
     private float horizontalInput;
     private Rigidbody2D rb;
 
@@ -36,6 +38,10 @@ public class Movimento : MonoBehaviour
 
     void Update()
     {
+        MoveAnim();
+        JumpAnim();
+        DashAnim();
+
         estaNoChao = Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerParaPulo);
 
         if (estaNoChao && rb.linearVelocity.y <= 0.1f)
@@ -78,7 +84,7 @@ public class Movimento : MonoBehaviour
         podeDarDash = false;
         estaDandoDash = true;
 
-        float direcao = horizontalInput != 0 ? Mathf.Sign(horizontalInput) : (spriteRenderer.flipX ? -1f : 1f);
+        float direcao = horizontalInput != 0 ? Mathf.Sign(horizontalInput) : (spriteRenderer.flipX ? 1f : -1f);
         rb.linearVelocity = new Vector2(direcao * velocidadeDash, rb.linearVelocity.y);
 
         yield return new WaitForSeconds(duracaoDash);
@@ -93,5 +99,22 @@ public class Movimento : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer(layerIgnoraPlataforma);
         yield return new WaitForSeconds(0.3f);
         gameObject.layer = layerOriginal;
+    }
+
+    void MoveAnim()
+    {
+        anim.SetFloat("HorizontalAnim", rb.linearVelocity.x);
+
+    }
+
+    void JumpAnim()
+    {
+        anim.SetFloat("VerticalAnim", rb.linearVelocity.y);
+        anim.SetBool("GroundCheck", estaNoChao);
+    }
+
+    void DashAnim()
+    {
+        anim.SetBool("DashCheck", estaDandoDash);
     }
 }

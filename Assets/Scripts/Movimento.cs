@@ -1,21 +1,23 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer), typeof(Animator))]
 public class Movimento : MonoBehaviour
 {
-    [SerializeField] private Animator anim;
-
-    private float horizontalInput;
+    [Header("Componentes")]
+    [SerializeField] private Animator animador;
     private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
 
     [Header("Movimentação")]
-    [SerializeField] private int velocidade = 5;
+    [SerializeField] private float velocidade = 5f;
+    private float entradaHorizontal;
 
-    [Header("Pulo e Pulo Duplo")]
-    [SerializeField] private Transform peDoPersonagem;
-    [SerializeField] private LayerMask layerParaPulo;       // Chao + Plataforma
-    [SerializeField] private LayerMask layerChaoSolido;      // Só Chao
-    [SerializeField] private int maximoPulos = 2;
-    private int quantidadePulos;
+    [Header("Pulo")]
+    [SerializeField] private Transform detectorChao;
+    [SerializeField] private LayerMask camadaPulo;           // Chão + Plataformas
+    [SerializeField] private LayerMask camadaChaoSolido;     // Apenas Chão
+    [SerializeField] private int maxPulos = 2;
+    private int pulosRestantes;
     private bool estaNoChao;
 
     [Header("Dash")]
@@ -25,9 +27,12 @@ public class Movimento : MonoBehaviour
     private bool podeDarDash = true;
     private bool estaDandoDash = false;
 
-    private SpriteRenderer spriteRenderer;
+    [Header("Plataformas")]
+    [SerializeField] private string nomeLayerIgnoraPlataforma = "IgnoraPlataforma";
     private int layerOriginal;
-    [SerializeField] private string layerIgnoraPlataforma = "IgnoraPlataforma";
+
+    private const float RAIO_DETECCAO_CHAO = 0.2f;
+    private const float FORCA_PULO = 12f;
 
     private void Awake()
     {
@@ -36,55 +41,81 @@ public class Movimento : MonoBehaviour
         layerOriginal = gameObject.layer;
     }
 
-    void Update()
+    private void Update()
     {
-        MoveAnim();
-        JumpAnim();
-        DashAnim();
-
-        estaNoChao = Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerParaPulo);
-
-        if (estaNoChao && rb.linearVelocity.y <= 0.1f)
-        {
-            quantidadePulos = maximoPulos;
-        }
-
-        horizontalInput = Input.GetAxis("Horizontal");
-
-        if (Input.GetKeyDown(KeyCode.Space) && quantidadePulos > 0)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 12f);
-            quantidadePulos--;
-        }
-
-        if (Input.GetKeyDown(KeyCode.LeftShift) && podeDarDash)
-        {
-            StartCoroutine(FazerDash());
-        }
-
-        if (Input.GetKeyDown(KeyCode.S) && !Physics2D.OverlapCircle(peDoPersonagem.position, 0.2f, layerChaoSolido))
-        {
-            StartCoroutine(CairDaPlataforma());
-        }
-
-        if (horizontalInput > 0) spriteRenderer.flipX = true;
-        else if (horizontalInput < 0) spriteRenderer.flipX = false;
+        AtualizarEntrada();
+        VerificarChao();
+        AtualizarPulos();
+        LidarComPulo();
+        LidarComDash();
+        LidarComDescidaPlataforma();
+        AtualizarOrientacaoSprite();
+        AtualizarAnimacoes();
     }
 
     private void FixedUpdate()
     {
         if (!estaDandoDash)
+            rb.linearVelocity = new Vector2(entradaHorizontal * velocidade, rb.linearVelocity.y);
+    }
+
+    private void AtualizarEntrada()
+    {
+        entradaHorizontal = Input.GetAxisRaw("Horizontal");
+    }
+
+    private void VerificarChao()
+    {
+        estaNoChao = Physics2D.OverlapCircle(detectorChao.position, RAIO_DETECCAO_CHAO, camadaPulo);
+    }
+
+    private void AtualizarPulos()
+    {
+        if (estaNoChao && rb.linearVelocity.y <= 0.1f)
+            pulosRestantes = maxPulos;
+    }
+
+    private void LidarComPulo()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && pulosRestantes > 0)
         {
-            rb.linearVelocity = new Vector2(horizontalInput * velocidade, rb.linearVelocity.y);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, FORCA_PULO);
+            pulosRestantes--;
         }
     }
 
-    private System.Collections.IEnumerator FazerDash()
+    private void LidarComDash()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift) && podeDarDash)
+        {
+            StartCoroutine(Dash());
+        }
+    }
+
+    private void LidarComDescidaPlataforma()
+    {
+        bool sobreChaoSolido = Physics2D.OverlapCircle(detectorChao.position, RAIO_DETECCAO_CHAO, camadaChaoSolido);
+
+        if (Input.GetKeyDown(KeyCode.S) && !sobreChaoSolido)
+        {
+            StartCoroutine(DescerPlataforma());
+        }
+    }
+
+    private void AtualizarOrientacaoSprite()
+    {
+        if (entradaHorizontal > 0)
+            spriteRenderer.flipX = true;
+        else if (entradaHorizontal < 0)
+            spriteRenderer.flipX = false;
+    }
+
+    private System.Collections.IEnumerator Dash()
     {
         podeDarDash = false;
         estaDandoDash = true;
 
-        float direcao = horizontalInput != 0 ? Mathf.Sign(horizontalInput) : (spriteRenderer.flipX ? 1f : -1f);
+        float direcao = entradaHorizontal != 0 ? Mathf.Sign(entradaHorizontal) : (spriteRenderer.flipX ? 1f : -1f);
         rb.linearVelocity = new Vector2(direcao * velocidadeDash, rb.linearVelocity.y);
 
         yield return new WaitForSeconds(duracaoDash);
@@ -94,27 +125,29 @@ public class Movimento : MonoBehaviour
         podeDarDash = true;
     }
 
-    private System.Collections.IEnumerator CairDaPlataforma()
+    private System.Collections.IEnumerator DescerPlataforma()
     {
-        gameObject.layer = LayerMask.NameToLayer(layerIgnoraPlataforma);
+        gameObject.layer = LayerMask.NameToLayer(nomeLayerIgnoraPlataforma);
         yield return new WaitForSeconds(0.3f);
         gameObject.layer = layerOriginal;
     }
 
-    void MoveAnim()
+    private void AtualizarAnimacoes()
     {
-        anim.SetFloat("HorizontalAnim", rb.linearVelocity.x);
-
+        animador.SetFloat("HorizontalAnim", Mathf.Abs(rb.linearVelocity.x));
+        animador.SetFloat("VerticalAnim", rb.linearVelocity.y);
+        animador.SetBool("GroundCheck", estaNoChao);
+        animador.SetBool("DashCheck", estaDandoDash);
     }
 
-    void JumpAnim()
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
     {
-        anim.SetFloat("VerticalAnim", rb.linearVelocity.y);
-        anim.SetBool("GroundCheck", estaNoChao);
+        if (detectorChao != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(detectorChao.position, RAIO_DETECCAO_CHAO);
+        }
     }
-
-    void DashAnim()
-    {
-        anim.SetBool("DashCheck", estaDandoDash);
-    }
+#endif
 }

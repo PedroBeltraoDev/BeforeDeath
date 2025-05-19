@@ -3,6 +3,14 @@ using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
+    public Slider slider;
+    private void start()
+    {
+        slider.value = health;
+        slider.maxValue = maxHealth;
+    
+    }
+
     public int maxHealth = 100;
     public int currentHealth;
 
@@ -16,6 +24,7 @@ public class PlayerHealth : MonoBehaviour
     private float criticalDamage = 18f;
     private float lifestealAmount = 0.7f;
     private float lifestealChance = 0.75f;
+    private float health;
 
     void Start()
     {

@@ -7,7 +7,7 @@ public class EnemyController : MonoBehaviour
     public float attackCooldown = 1f;
     public int maxHealth = 100;
     public int baseDamage = 8;
-    public float gravityScale = 3f;
+    public float gravityScale = 1f;
 
     private int currentHealth;
     private float lastAttackTime;
@@ -43,12 +43,12 @@ public class EnemyController : MonoBehaviour
         if (distance > attackRange)
         {
             Vector2 direction = (targetPlayer.position - transform.position).normalized;
-            rb.linearVelocity = new Vector2(direction.x * moveSpeed, rb.linearVelocity.y);
+            rb.linearVelocity = new Vector2(direction.x * moveSpeed, rb.linearVelocity.y); // ✅ CORREÇÃO AQUI
             animator.SetBool("isWalking", true);
         }
         else
         {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y); // ✅ Mantém velocidade vertical
             animator.SetBool("isWalking", false);
 
             if (Time.time - lastAttackTime >= attackCooldown)
@@ -77,22 +77,20 @@ public class EnemyController : MonoBehaviour
     }
 
     void Die()
-{
-    animator.SetBool("isDead", true);
-    rb.linearVelocity = Vector2.zero;
+    {
+        animator.SetBool("isDead", true);
+        rb.linearVelocity = Vector2.zero;
 
-    // Notifica o WaveSpawner de que este inimigo morreu
-    WaveSpawner waveSpawner = FindObjectOfType<WaveSpawner>();
-    if (waveSpawner != null)
-        waveSpawner.EnemyDied();
+        WaveSpawner waveSpawner = FindObjectOfType<WaveSpawner>();
+        if (waveSpawner != null)
+            waveSpawner.EnemyDied();
 
-    // Destroi o inimigo após 1 segundo (tempo para animação de morte)
-    Destroy(gameObject, 1f);
-}
-
+        Destroy(gameObject, 1f);
+    }
 
     public void ResetAttack()
     {
         animator.ResetTrigger("Attack");
     }
 }
+

@@ -4,9 +4,11 @@ public class PlayerAttack : MonoBehaviour
 {
     public float attackRange = 5f;
     public float damage = 15f;
-    public LayerMask enemyLayer;  // Defina no Inspector a camada dos inimigos
+    public float attackCooldown = 1f;
+    private float lastAttackTime = -Mathf.Infinity;
 
-    // Vampirismo
+    public LayerMask enemyLayer;
+
     public float vampirismRange = 5f;
     public float vampirismDamage = 4f;
     public float vampirismHeal = 15f;
@@ -26,14 +28,30 @@ public class PlayerAttack : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))  // Ataque normal com botão esquerdo
+        // Clique esquerdo para atacar
+        if (Input.GetMouseButtonDown(0))
         {
-            Attack();
+            TryAttack();
         }
 
-        if (Input.GetKeyDown(KeyCode.E))  // Vampirismo ao apertar E
+        // Tecla E para usar Vampirismo
+        if (Input.GetKeyDown(KeyCode.E))
         {
             TryVampirism();
+        }
+    }
+
+    void TryAttack()
+    {
+        if (Time.time >= lastAttackTime + attackCooldown)
+        {
+            Attack();
+            lastAttackTime = Time.time;
+        }
+        else
+        {
+            float wait = (lastAttackTime + attackCooldown) - Time.time;
+            Debug.Log($"Ataque em cooldown. Aguarde {wait:F1} segundos.");
         }
     }
 
@@ -43,10 +61,10 @@ public class PlayerAttack : MonoBehaviour
 
         foreach (Collider2D enemy in hitEnemies)
         {
-            HealthSystem enemyHealth = enemy.GetComponent<HealthSystem>();
-            if (enemyHealth != null)
+            EnemySystem enemySystem = enemy.GetComponent<EnemySystem>();
+            if (enemySystem != null)
             {
-                enemyHealth.TakeDamage(damage);
+                enemySystem.TakeDamage(damage);
                 Debug.Log($"Inimigo {enemy.name} atingido com {damage} de dano.");
             }
         }
@@ -72,25 +90,22 @@ public class PlayerAttack : MonoBehaviour
 
         foreach (Collider2D enemy in hitEnemies)
         {
-            HealthSystem enemyHealth = enemy.GetComponent<HealthSystem>();
-            if (enemyHealth != null)
+            EnemySystem enemySystem = enemy.GetComponent<EnemySystem>();
+            if (enemySystem != null)
             {
-                enemyHealth.TakeDamage(vampirismDamage);
-                Debug.Log($"Vampirismo atingiu inimigo {enemy.name} causando {vampirismDamage} de dano.");
+                enemySystem.TakeDamage(vampirismDamage);
+                Debug.Log($"Vampirismo atingiu {enemy.name} causando {vampirismDamage} de dano.");
             }
         }
 
         if (playerHealth != null)
         {
             playerHealth.health += vampirismHeal;
-            if (playerHealth.health > playerHealth.healthMax)
-                playerHealth.health = playerHealth.healthMax;
-
-            Debug.Log($"Player recuperou {vampirismHeal} de vida pelo vampirismo.");
+            playerHealth.health = Mathf.Clamp(playerHealth.health, 0, playerHealth.healthMax);
+            Debug.Log($"Player recuperou {vampirismHeal} de vida.");
         }
     }
 
-    // Visualização no editor
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

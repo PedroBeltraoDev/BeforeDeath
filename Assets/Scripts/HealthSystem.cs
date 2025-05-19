@@ -16,10 +16,23 @@ public class HealthSystem : MonoBehaviour
         slider.maxValue = healthMax;
     }
 
-    // Novo método para aplicar dano
+    // Método para aplicar dano
     public void TakeDamage(float damage)
     {
         health -= damage;
         health = Math.Clamp(health, 0, healthMax);
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        // Aqui você pode colocar a lógica de morte do player,
+        // por exemplo desabilitar o personagem, ativar animação de morte, etc.
+        Debug.Log("Player morreu!");
+        // Exemplo: gameObject.SetActive(false);
     }
 }

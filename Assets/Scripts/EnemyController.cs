@@ -5,20 +5,25 @@ public class EnemyController : MonoBehaviour
     public float moveSpeed = 2f;
     public float attackRange = 1f;
     public float attackCooldown = 1f;
-    public int maxHealth = 3;
-    public int damage = 1;
+    public int maxHealth = 100;
+    public int baseDamage = 8;
+    public float difficultyRampTime = 60f; // A cada 60 segundos o dano aumenta
+    public float gravityScale = 4f;
 
     private Transform targetPlayer;
     private Animator animator;
     private Rigidbody2D rb;
     private float lastAttackTime;
     private int currentHealth;
+    private float spawnTime;
 
     void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+        rb.gravityScale = gravityScale;
         currentHealth = maxHealth;
+        spawnTime = Time.time;
 
         // Procura automaticamente um dos jogadores
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
@@ -36,29 +41,35 @@ public class EnemyController : MonoBehaviour
 
         float distance = Vector2.Distance(transform.position, targetPlayer.position);
 
-        // Movimento
         if (distance > attackRange)
         {
             Vector2 direction = (targetPlayer.position - transform.position).normalized;
-            rb.linearVelocity = direction * moveSpeed;
+            rb.linearVelocity = new Vector2(direction.x * moveSpeed, rb.linearVelocity.y); // Mantém gravidade
             animator.SetBool("isWalking", true);
         }
         else
         {
-            rb.linearVelocity = Vector2.zero;
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
             animator.SetBool("isWalking", false);
 
-            // Ataque
             if (Time.time - lastAttackTime >= attackCooldown)
             {
                 animator.SetBool("isAttacking", true);
                 lastAttackTime = Time.time;
-                // Aqui você pode chamar uma função para causar dano ao jogador
+
+                int difficultyBonus = Mathf.FloorToInt((Time.time - spawnTime) / difficultyRampTime);
+                int totalDamage = baseDamage + difficultyBonus;
+
+                if (targetPlayer != null)
+                {
+                    PlayerHealth player = targetPlayer.GetComponent<PlayerHealth>();
+                    if (player != null)
+                        player.TakeDamage(totalDamage);
+                }
             }
         }
     }
 
-    // Chame isso quando o inimigo levar dano
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
@@ -73,10 +84,17 @@ public class EnemyController : MonoBehaviour
     {
         animator.SetBool("isDead", true);
         rb.linearVelocity = Vector2.zero;
-        Destroy(gameObject, 1f); // Aguarda animação de morte antes de destruir
+
+        // Avisa o jogador que matou o inimigo
+        PlayerHealth player = FindObjectOfType<PlayerHealth>();
+        if (player != null)
+        {
+            player.OnEnemyKilled();
+        }
+
+        Destroy(gameObject, 1f); // Aguarda animação de morte
     }
 
-    // Exemplo de resetar o ataque após a animação
     public void ResetAttack()
     {
         animator.SetBool("isAttacking", false);

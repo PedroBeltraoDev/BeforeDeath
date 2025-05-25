@@ -11,6 +11,7 @@ public class EnemyMovement : MonoBehaviour
     private Rigidbody2D rbEnemy;
     private Transform player;
     private SpriteRenderer spriteRenderer;
+    [SerializeField] private bool isAttacking;
 
     [Header("Movimentação")]
     [SerializeField] private float velocidade = 3f;
@@ -21,19 +22,18 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private Transform detectorChao;
     [SerializeField] private LayerMask camadaChao;
     private bool estaNoChao;
-    private const float RAIO_DETECCAO_CHAO = 0.3f; // Aumentado para melhor detecção
+    private const float raioDeteccaoChao = 0.3f;
 
     [Header("Pulo Inteligente")]
-    [SerializeField] private Transform detectorParede;
-    [SerializeField] private Transform detectorParede2;
-
+    [SerializeField] private Transform detectorParedeDireita;
+    [SerializeField] private Transform detectorParedeEsquerda;
     [SerializeField] private float distanciaParede = 0.5f;
 
     private void Awake()
     {
         rbEnemy = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        player = GameObject.FindWithTag("Player").transform;
+        player = GameObject.FindWithTag("Player")?.transform;
 
         int enemyLayer = LayerMask.NameToLayer("Enemy");
         Physics2D.IgnoreLayerCollision(enemyLayer, enemyLayer, true);
@@ -41,6 +41,8 @@ public class EnemyMovement : MonoBehaviour
 
     private void Update()
     {
+        if (player == null) return;
+
         VerificarChao();
         VerificarDistanciaJogador();
         AtualizarAnimacoes();
@@ -53,8 +55,7 @@ public class EnemyMovement : MonoBehaviour
         if (Vector2.Distance(transform.position, player.position) < alcanceDeteccao)
         {
             Vector2 direcao = (player.position - transform.position).normalized;
-            Vector2 velocidadeAtual = rbEnemy.linearVelocity;
-            rbEnemy.linearVelocity = new Vector2(direcao.x * velocidade, velocidadeAtual.y);
+            rbEnemy.linearVelocity = new Vector2(direcao.x * velocidade, rbEnemy.linearVelocity.y);
         }
         else
         {
@@ -67,6 +68,7 @@ public class EnemyMovement : MonoBehaviour
         animador.SetFloat("EhorizontalAnim", Mathf.Abs(rbEnemy.linearVelocity.x));
         animador.SetFloat("EverticalAnim", rbEnemy.linearVelocity.y);
         animador.SetBool("GroundCheck", estaNoChao);
+        animador.SetBool("AttackCheck", isAttacking);
     }
 
     private void AtualizarOrientacao()
@@ -79,14 +81,14 @@ public class EnemyMovement : MonoBehaviour
 
     private void VerificarChao()
     {
-        estaNoChao = Physics2D.OverlapCircle(detectorChao.position, RAIO_DETECCAO_CHAO, camadaChao);
+        estaNoChao = Physics2D.OverlapCircle(detectorChao.position, raioDeteccaoChao, camadaChao);
     }
 
     private bool TemParedeNaFrente()
     {
         bool indoParaDireita = rbEnemy.linearVelocity.x > 0;
         Vector2 direcao = indoParaDireita ? Vector2.right : Vector2.left;
-        Transform detectorUsado = indoParaDireita ? detectorParede : detectorParede2;
+        Transform detectorUsado = indoParaDireita ? detectorParedeDireita : detectorParedeEsquerda;
 
         RaycastHit2D hit = Physics2D.Raycast(detectorUsado.position, direcao, distanciaParede, camadaChao);
 
@@ -101,8 +103,8 @@ public class EnemyMovement : MonoBehaviour
     private void TentarPular()
     {
         if (estaNoChao &&
-    Vector2.Distance(transform.position, player.position) < alcanceDeteccao &&
-    TemParedeNaFrente())
+            Vector2.Distance(transform.position, player.position) < alcanceDeteccao &&
+            TemParedeNaFrente())
         {
             rbEnemy.linearVelocity = new Vector2(rbEnemy.linearVelocity.x, forcaPulo);
         }
@@ -114,18 +116,17 @@ public class EnemyMovement : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, alcanceDeteccao);
 
-        if (detectorParede != null)
+        if (detectorParedeDireita != null)
         {
             Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(detectorParede.position, detectorParede.position + Vector3.right * distanciaParede);
+            Gizmos.DrawLine(detectorParedeDireita.position, detectorParedeDireita.position + Vector3.right * distanciaParede);
         }
 
-        if (detectorParede2 != null)
+        if (detectorParedeEsquerda != null)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(detectorParede2.position, detectorParede2.position + Vector3.left * distanciaParede);
+            Gizmos.DrawLine(detectorParedeEsquerda.position, detectorParedeEsquerda.position + Vector3.left * distanciaParede);
         }
     }
-
 #endif
 }

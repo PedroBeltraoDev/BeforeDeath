@@ -9,7 +9,7 @@ public class EnemyAttack : MonoBehaviour
 
     private HealthSystem playerHealth;
 
-    private float attackCooldown = 2.5f;  // cooldown em segundos
+    private float attackCooldown = 2.5f;
     private float lastAttackTime = -Mathf.Infinity;
 
     private void Start()
@@ -20,20 +20,23 @@ public class EnemyAttack : MonoBehaviour
 
     private void Update()
     {
-        if (playerHealth == null) return;
+        if (player == null || playerHealth == null) return;
 
         float distance = Vector2.Distance(transform.position, player.position);
 
         if (distance <= attackRange && Time.time >= lastAttackTime + attackCooldown)
         {
             Attack();
-            lastAttackTime = Time.time;  // atualiza o tempo do último ataque
+            lastAttackTime = Time.time;
         }
     }
 
     private void Attack()
     {
-        playerHealth.TakeDamage(damage);
-        Debug.Log("Inimigo atacou e causou " + damage + " de dano.");
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(damage);
+            Debug.Log("Inimigo atacou e causou " + damage + " de dano.");
+        }
     }
 }

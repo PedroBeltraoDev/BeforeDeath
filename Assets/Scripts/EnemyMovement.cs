@@ -7,15 +7,21 @@ using UnityEngine;
 public class EnemyMovement : MonoBehaviour
 {
     [Header("Componentes")]
-    [SerializeField] private Animator animador;
     private Rigidbody2D rbEnemy;
-    private Transform player;
     private SpriteRenderer spriteRenderer;
-    [SerializeField] private bool isAttacking;
+    private Transform player;
+    private HealthSystem playerHealth;
+    private bool isAttacking;
 
     [Header("Movimentação")]
     [SerializeField] private float velocidade = 3f;
     [SerializeField] private float alcanceDeteccao = 10f;
+    [SerializeField] private float distanciaAtaque = 1.5f;
+
+    [Header("Ataque")]
+    [SerializeField] private float dano = 10f;
+    [SerializeField] private float tempoEntreAtaques = 1f;
+    private float tempoProximoAtaque;
 
     [Header("Pulo")]
     [SerializeField] private float forcaPulo = 12f;
@@ -33,7 +39,13 @@ public class EnemyMovement : MonoBehaviour
     {
         rbEnemy = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        player = GameObject.FindWithTag("Player")?.transform;
+
+        GameObject playerObj = GameObject.FindWithTag("Player");
+        if (playerObj != null)
+        {
+            player = playerObj.transform;
+            playerHealth = playerObj.GetComponent<HealthSystem>();
+        }
 
         int enemyLayer = LayerMask.NameToLayer("Enemy");
         Physics2D.IgnoreLayerCollision(enemyLayer, enemyLayer, true);
@@ -43,32 +55,52 @@ public class EnemyMovement : MonoBehaviour
     {
         if (player == null) return;
 
+        tempoProximoAtaque -= Time.deltaTime;
+
         VerificarChao();
         VerificarDistanciaJogador();
-        AtualizarAnimacoes();
         AtualizarOrientacao();
         TentarPular();
     }
 
     private void VerificarDistanciaJogador()
     {
-        if (Vector2.Distance(transform.position, player.position) < alcanceDeteccao)
+        float distancia = Vector2.Distance(transform.position, player.position);
+
+        if (distancia < distanciaAtaque)
         {
+            // Parar para atacar
+            rbEnemy.linearVelocity = new Vector2(0, rbEnemy.linearVelocity.y);
+            isAttacking = true;
+
+            if (tempoProximoAtaque <= 0f)
+            {
+                Atacar();
+                tempoProximoAtaque = tempoEntreAtaques;
+            }
+        }
+        else if (distancia < alcanceDeteccao)
+        {
+            // Perseguir o jogador
             Vector2 direcao = (player.position - transform.position).normalized;
             rbEnemy.linearVelocity = new Vector2(direcao.x * velocidade, rbEnemy.linearVelocity.y);
+            isAttacking = false;
         }
         else
         {
+            // Fica parado
             rbEnemy.linearVelocity = new Vector2(0, rbEnemy.linearVelocity.y);
+            isAttacking = false;
         }
     }
 
-    private void AtualizarAnimacoes()
+    private void Atacar()
     {
-        animador.SetFloat("EhorizontalAnim", Mathf.Abs(rbEnemy.linearVelocity.x));
-        animador.SetFloat("EverticalAnim", rbEnemy.linearVelocity.y);
-        animador.SetBool("GroundCheck", estaNoChao);
-        animador.SetBool("AttackCheck", isAttacking);
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(dano);
+            Debug.Log("Inimigo causou " + dano + " de dano ao player.");
+        }
     }
 
     private void AtualizarOrientacao()
@@ -92,11 +124,6 @@ public class EnemyMovement : MonoBehaviour
 
         RaycastHit2D hit = Physics2D.Raycast(detectorUsado.position, direcao, distanciaParede, camadaChao);
 
-        if (hit.collider != null)
-        {
-            Debug.Log("Raycast acertou: " + hit.collider.name);
-        }
-
         return hit.collider != null;
     }
 
@@ -115,6 +142,9 @@ public class EnemyMovement : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, alcanceDeteccao);
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, distanciaAtaque);
 
         if (detectorParedeDireita != null)
         {

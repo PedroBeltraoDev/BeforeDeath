@@ -51,6 +51,7 @@ public class Movimento : MonoBehaviour
         LidarComDescidaPlataforma();
         AtualizarOrientacaoSprite();
         AtualizarAnimacoes();
+
     }
 
     private void FixedUpdate()
@@ -131,6 +132,8 @@ public class Movimento : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         gameObject.layer = layerOriginal;
     }
+
+
 
     private void AtualizarAnimacoes()
     {

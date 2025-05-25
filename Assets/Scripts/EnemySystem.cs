@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class EnemySystem : MonoBehaviour
 {
+    private Animator animator;
     [Header("Health Settings")]
     public float healthMax = 100f;
     private float health;
@@ -48,10 +49,15 @@ public class EnemySystem : MonoBehaviour
             Die();
         }
     }
+    private void Awake()
+    {
+        animator = GetComponent<Animator>();
+    }
 
     private void Die()
     {
         Debug.Log($"{gameObject.name} morreu!");
-        Destroy(gameObject);
+        animator.SetTrigger("Die");
+        Destroy(gameObject, 0.5f); // Dá meio segundo pra animação tocar antes de sumir
     }
 }

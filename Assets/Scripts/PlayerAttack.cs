@@ -6,6 +6,7 @@ public class PlayerAttack : MonoBehaviour
     private Animator animador;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
+    private HealthSystem healthSystem; // Referência ao HealthSystem
 
     [Header("Ataque")]
     [SerializeField] private float tempoRecarga = 0.5f;
@@ -14,6 +15,9 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private LayerMask camadaInimigo;
     [SerializeField] private float dano = 25f;
 
+    [Header("Vampirismo")]
+    [SerializeField] private float porcentagemVampirismo = 0.3f; // 30% do dano é recuperado
+
     private bool podeAtacar = true;
 
     private void Awake()
@@ -21,6 +25,12 @@ public class PlayerAttack : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animador = GetComponent<Animator>();
+
+        healthSystem = GetComponent<HealthSystem>(); // pega o componente
+        if (healthSystem == null)
+        {
+            Debug.LogWarning("HealthSystem não encontrado no Player!");
+        }
     }
 
     private void Update()
@@ -48,7 +58,18 @@ public class PlayerAttack : MonoBehaviour
             if (enemySystem != null)
             {
                 enemySystem.TakeDamage(dano);
+                AplicarVampirismo(dano);
             }
+        }
+    }
+
+    private void AplicarVampirismo(float danoCausado)
+    {
+        float cura = danoCausado * porcentagemVampirismo;
+
+        if (healthSystem != null)
+        {
+            healthSystem.Heal(cura);
         }
     }
 

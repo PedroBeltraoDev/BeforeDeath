@@ -12,8 +12,11 @@ public class HealthSystem : MonoBehaviour
     {
         health = Math.Clamp(health, 0, healthMax);
 
-        slider.value = health;
-        slider.maxValue = healthMax;
+        if (slider != null)
+        {
+            slider.value = health;
+            slider.maxValue = healthMax;
+        }
     }
 
     // Método para aplicar dano
@@ -28,10 +31,16 @@ public class HealthSystem : MonoBehaviour
         }
     }
 
+    // NOVO: Método para curar
+    public void Heal(float amount)
+    {
+        health += amount;
+        health = Math.Clamp(health, 0, healthMax);
+        Debug.Log($"Curado: +{amount}, Vida atual: {health}");
+    }
+
     private void Die()
     {
-        // Aqui você pode colocar a lógica de morte do player,
-        // por exemplo desabilitar o personagem, ativar animação de morte, etc.
         Debug.Log("Player morreu!");
         // Exemplo: gameObject.SetActive(false);
     }

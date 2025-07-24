@@ -1,3 +1,30 @@
-# BeforeDeath
-Before Death é um jogo de plataforma 2D PvP onde dois personagens duelam em mapas sombrios e dinamicamente perigosos. Cada jogador escolhe entre dois guerreiros com estilos contrastantes: Sir Aldric, o cavaleiro experiente e disciplinado; e Edric, o jovem destemido que busca provar seu valor.
-Com mecânicas inspiradas em Cuphead e sistemas de combate tático, o jogo aposta em ação intensa, movimentação fluida e mapas de múltiplos níveis com orbes que alteram a dinâmica das batalhas. A visão é limitada, aumentando a tensão e forçando decisões rápidas.
+# 🗡️ Before Death
+
+**Before Death** é um jogo 2D de ação e sobrevivência desenvolvido em **Unity** para PC. Você controla **Sir Aldric**, um guerreiro veterano que enfrenta hordas de caveiras zumbis em arenas sombrias e desafiadoras.
+
+## 🎮 Características Principais
+
+- **Gênero:** Plataforma 2D, ação, fantasia sombria
+- **Estilo:** Arte digital com contraste de luz e sombra, inspirado em dark fantasy
+- **Gameplay:** Combate ágil com espada e besta, dash e pulo duplo
+- **Mapas:** Três camadas — cavernas, campo aberto e ilhas flutuantes
+- **Modos de Jogo:**
+  - **Sobrevivência:** Ondas infinitas
+  - **Desafio:** Ondas fixas com dificuldade crescente
+
+## 🧠 Destaques Técnicos
+
+- **Engine:** Unity
+- **Plataforma alvo:** PC (com distribuição gratuita via Steam)
+- **Sem sistema de loot/upgrades** — foco em habilidade pura
+- **Código modular e mecânicas escaláveis**
+
+## 📢 Objetivo
+
+Distribuir gratuitamente para a comunidade, com foco em **jogabilidade desafiadora**, **speedruns** e **visibilidade em eventos indies**.
+
+---
+
+📫 **Contato:**  
+[Pedro Beltrão]  
+[LinkedIn](https://www.linkedin.com/in/pedro-beltrão123/) • [GitHub](https://github.com/PedroBeltraoDev) • pedrobeltraodev@gmail.com
